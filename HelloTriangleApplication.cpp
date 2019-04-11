@@ -16,6 +16,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
+#include <array>
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 const int WIDTH = 800;
