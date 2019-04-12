@@ -1,2 +1,2 @@
-/*vulkan_sdk_dir_path*/x86_64/bin/glslangValidator -V shader.vert
-/*vulkan_sdk_dir_path*/x86_64/bin/glslangValidator -V shader.frag
+D:\Program Files\VulkanSDK\1.1.101.0\Bin\glslangValidator.exe -V -V shader.vert
+D:\Program Files\VulkanSDK\1.1.101.0\Bin\glslangValidator.exe -V shader.frag
