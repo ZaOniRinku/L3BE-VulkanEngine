@@ -204,7 +204,7 @@ private:
 		// Camera
     bool lockZAxis = false;
     float savedZAxis = 0.0f;
-		glm::vec3 cameraPosition = glm::vec3(0.0f, 3.0f, 0.5f);
+		glm::vec3 cameraPosition = glm::vec3(0.0f, 3.0f, 0.3f);
 		glm::vec3 cameraFront = glm::vec3(0.0f, -1.0f, 0.0f);
 		glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
 		// Movement speed
@@ -243,7 +243,7 @@ private:
       }
       // Reset z axis
       if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        cameraPosition.z = 0.5f;
+        cameraPosition.z = 0.3f;
         savedZAxis = cameraPosition.z;
       }
 		}
@@ -261,7 +261,7 @@ private:
       float yOffset = (yPos - app->yMouseLast) * app->sensitivity;
       app->xMouseLast = xPos;
       app->yMouseLast = yPos;
-      app->yaw += xOffset;
+      app->yaw = glm::mod(app->yaw + xOffset, 360.0f);
       app->pitch += yOffset;
 
       if (app->pitch > 89.0f) {
