@@ -6,7 +6,7 @@ CFLAGS = -std=c++17 -I$(VULKAN_SDK_PATH)/include -I$(STB_INCLUDE_PATH) -I$(TINYO
 LDFLAGS = -L$(VULKAN_SDK_PATH)/lib `pkg-config --static --libs glfw3` -lvulkan
 
 VulkanTest: main.cpp
-	g++ $(CFLAGS) -o VulkanTest HelloTriangleApplication.cpp $(LDFLAGS)
+	g++ $(CFLAGS) -o VulkanTest L3BE_VulkanEngine.cpp $(LDFLAGS)
 
 .PHONY: test clean
 
