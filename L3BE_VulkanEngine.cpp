@@ -202,18 +202,27 @@ private:
     VkImageView colorImageView;
 
 		// Camera
+    bool lockZAxis = false;
+    float savedZAxis = 0.0f;
 		glm::vec3 cameraPosition = glm::vec3(0.0f, 3.0f, 0.5f);
 		glm::vec3 cameraFront = glm::vec3(0.0f, -1.0f, 0.0f);
 		glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
 		// Movement speed
 		float deltaTime = 0.0f;
 		float lastFrame = 0.0f;
+    // Mouse movement
+    float firstMouse = true;
+    float sensitivity = 0.05f;
+    float xMouseLast = WIDTH/2;
+    float yMouseLast = HEIGHT/2;
+    float pitch = 0.0f;
+    float yaw = 0.0f;
 
 		void inputsManagement(GLFWwindow* window) {
 			float currentFrame = (float) clock()/CLOCKS_PER_SEC;
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
-			float movementSpeed = 15.0f * deltaTime;
+			float movementSpeed = 25.0f * deltaTime;
 			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 				cameraPosition += cameraFront * movementSpeed;
 			}
@@ -225,8 +234,49 @@ private:
 			}
 			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
 				cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * movementSpeed;
-			}
+      }
+      if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        cameraPosition += cameraUp * movementSpeed;
+      }
+      if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        cameraPosition -= cameraUp * movementSpeed;
+      }
+      // Reset z axis
+      if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        cameraPosition.z = 0.5f;
+        savedZAxis = cameraPosition.z;
+      }
 		}
+
+    static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
+      auto app = reinterpret_cast<L3BE_VulkanEngine*>(glfwGetWindowUserPointer(window));
+
+      if (app->firstMouse) {
+        app->xMouseLast = xPos;
+        app->yMouseLast = yPos;
+        app->firstMouse = false;
+      }
+
+      float xOffset = (xPos - app->xMouseLast) * app->sensitivity;
+      float yOffset = (yPos - app->yMouseLast) * app->sensitivity;
+      app->xMouseLast = xPos;
+      app->yMouseLast = yPos;
+      app->yaw += xOffset;
+      app->pitch += yOffset;
+
+      if (app->pitch > 89.0f) {
+        app->pitch = 89.0f;
+      }
+      if (app->pitch < -89.0f) {
+        app->pitch = -89.0f;
+      }
+
+      glm::vec3 front;
+      front.x = cos(glm::radians(app->pitch)) * cos(glm::radians(app->yaw));
+      front.y = cos(glm::radians(app->pitch)) * sin(glm::radians(app->yaw)) * -1;
+      front.z = sin(glm::radians(app->pitch)) * -1;
+      app->cameraFront = glm::normalize(front);
+    }
 
     static std::vector<char> readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -309,6 +359,8 @@ private:
         window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", glfwGetPrimaryMonitor(), nullptr);
         glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(window, mouseCallback);
     }
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
