@@ -204,6 +204,7 @@ private:
 	VkImageView colorImageView;
 
 	// Camera
+	float savedZAxis = 0.3f;
 	glm::vec3 cameraPosition = glm::vec3(-3.0f, 0.0f, 0.3f);
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -241,10 +242,11 @@ private:
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 			cameraPosition -= cameraUp * movementSpeed;
 		}
-		// Reset/Lock z axis
+		// Lock z axis
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-			cameraPosition.z = 0.3f;
+			cameraPosition.z = savedZAxis;
 		}
+		savedZAxis = cameraPosition.z;
 	}
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
