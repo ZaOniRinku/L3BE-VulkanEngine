@@ -31,9 +31,10 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-const std::vector<std::string> MODELS_PATH = { "models/chalet.obj", "models/dice.obj", "models/dice.obj" };
-const std::vector<glm::vec3> POSITIONS = { {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {2.0f, 2.0f, 2.0f} };
-const std::vector<std::string> TEXTURES_PATH = { "textures/chalet.jpg", "textures/texturedirt.jpg", "textures/texturede.png" };
+const std::vector<std::string> MODELS_PATH = { "models/table.obj", "models/dice.obj", "models/dice.obj" };
+const std::vector<glm::vec3> POSITIONS = { {0.0f, 0.0f, 0.0f}, {-1.8f, 9.6f, -3.5f}, {4.5f, 9.6f, 3.2f} };
+const std::vector<float> SCALE_RATIO = { 0.5f, 0.07f, 0.07f };
+const std::vector<std::string> TEXTURES_PATH = { "textures/table.png", "textures/texturede.png", "textures/texturede.png" };
 
 struct UniformBufferObject {
 	alignas(16) glm::mat4 model;
@@ -203,10 +204,8 @@ private:
 	VkImageView colorImageView;
 
 	// Camera
-	bool lockZAxis = false;
-	float savedZAxis = 0.0f;
-	glm::vec3 cameraPosition = glm::vec3(0.0f, 3.0f, 0.3f);
-	glm::vec3 cameraFront = glm::vec3(0.0f, -1.0f, 0.0f);
+	glm::vec3 cameraPosition = glm::vec3(-3.0f, 0.0f, 0.3f);
+	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
 	// Movement speed
 	float deltaTime = 0.0f;
@@ -242,16 +241,16 @@ private:
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 			cameraPosition -= cameraUp * movementSpeed;
 		}
-		// Reset z axis
+		// Reset/Lock z axis
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			cameraPosition.z = 0.3f;
-			savedZAxis = cameraPosition.z;
 		}
 	}
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
 		auto app = reinterpret_cast<L3BE_VulkanEngine*>(glfwGetWindowUserPointer(window));
 
+		// First time we move the mouse
 		if (app->firstMouse) {
 			app->xMouseLast = xPos;
 			app->yMouseLast = yPos;
@@ -357,6 +356,7 @@ private:
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		// change the first nullptr to glfwGetPrimaryMonitor() for fullscreen
 		window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
 		glfwSetWindowUserPointer(window, this);
 		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
@@ -448,7 +448,7 @@ private:
 		}
 		for (int i = 0; i < createInfo.enabledExtensionCount; i++) {
 			if (!extensionsAreSupported[i]) {
-				std::cout << "\t" << requiredExtensions[i] << " is not supported !" << std::endl;
+				std::cout << "\t" << requiredExtensions[i] << " is not supported!" << std::endl;
 			}
 		}
 	}
@@ -835,9 +835,9 @@ private:
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
+		multisampling.sampleShadingEnable = VK_TRUE;
 		multisampling.rasterizationSamples = msaaSamples;
-		multisampling.minSampleShading = 0.2f;
+		multisampling.minSampleShading = 0.1f;
 		multisampling.pSampleMask = nullptr;
 		multisampling.alphaToCoverageEnable = VK_FALSE;
 		multisampling.alphaToOneEnable = VK_FALSE;
@@ -1081,6 +1081,7 @@ private:
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
       VkDeviceSize offsets[] = { 0 };
+			// For each 3D model, bind its vertex and indices and the right descriptor set for its texture
 			for (uint32_t j = 0; j < MODELS_PATH.size(); j++) {
 				VkBuffer vertexCmdBuffers[] = { vertexBuffers[j] };
         vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexCmdBuffers, offsets);
@@ -1355,13 +1356,14 @@ private:
 	}
 
 	void updateUniformBuffer(uint32_t currentImage) {
-		static auto startTime = std::chrono::high_resolution_clock::now();
+		//For time related manipulations
+		/*static auto startTime = std::chrono::high_resolution_clock::now();
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();*/
 
 		UniformBufferObject ubo = {};
-		ubo.model = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		ubo.view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
 		ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 		// Render the right way (openGL standards -> Vulkan standards)
@@ -1697,9 +1699,9 @@ private:
 			for (const auto& index : shape.mesh.indices) {
 				Vertex vertex = {};
 				vertex.pos = {
-					attrib.vertices[3 * index.vertex_index + 0] + POSITIONS[modelIndex].x,
-					attrib.vertices[3 * index.vertex_index + 1] + POSITIONS[modelIndex].y,
-					attrib.vertices[3 * index.vertex_index + 2] + POSITIONS[modelIndex].z
+					(attrib.vertices[3 * index.vertex_index + 0] + POSITIONS[modelIndex].x) * SCALE_RATIO[modelIndex],
+					(attrib.vertices[3 * index.vertex_index + 1] + POSITIONS[modelIndex].y) * SCALE_RATIO[modelIndex],
+					(attrib.vertices[3 * index.vertex_index + 2] + POSITIONS[modelIndex].z) * SCALE_RATIO[modelIndex]
 				};
 				vertex.texCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
