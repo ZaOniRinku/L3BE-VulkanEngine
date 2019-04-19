@@ -206,7 +206,7 @@ private:
 	// Camera
 	float savedZAxis = 0.3f;
 	glm::vec3 cameraPosition = glm::vec3(-3.0f, 0.0f, 0.3f);
-	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 cameraFront = glm::vec3(1.0f, 0.0f, 0.0f);
 	glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
 	// Movement speed
 	float deltaTime = 0.0f;
