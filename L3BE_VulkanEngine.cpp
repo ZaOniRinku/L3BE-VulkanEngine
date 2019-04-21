@@ -31,10 +31,10 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-const std::vector<std::string> MODELS_PATH = { "models/table.obj", "models/dice.obj", "models/dice.obj" };
-const std::vector<glm::vec3> POSITIONS = { {0.0f, 0.0f, 0.0f}, {-1.8f, 9.6f, -3.5f}, {4.5f, 9.6f, 3.2f} };
-const std::vector<float> SCALE_RATIO = { 0.5f, 0.07f, 0.07f };
-const std::vector<std::string> TEXTURES_PATH = { "textures/table.png", "textures/texturede.png", "textures/texturede.png" };
+const std::vector<std::string> MODELS_PATH = { "models/table.obj", "models/dice.obj", "models/dice.obj", "models/plan.obj"};
+const std::vector<glm::vec3> POSITIONS = { {0.0f, 0.1f, 0.0f}, {-1.8f, 10.4f, -3.5f}, {4.5f, 10.4f, 3.2f}, {0.0f, 0.0f, 0.0f}};
+const std::vector<float> SCALE_RATIO = { 0.5f, 0.07f, 0.07f, 10.0f};
+const std::vector<std::string> TEXTURES_PATH = { "textures/table.png", "textures/texturede.png", "textures/texturede.png", "textures/textureplan.jpg"};
 
 struct UniformBufferObject {
 	alignas(16) glm::mat4 model;
@@ -598,7 +598,7 @@ private:
 		}
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
 
-		for (size_t i = 0; i < swapChainImages.size()*TEXTURES_PATH.size(); i++) {
+		for (size_t i = 0; i < swapChainImages.size()*MODELS_PATH.size(); i++) {
 			vkDestroyBuffer(device, uniformBuffers[i], nullptr);
 			vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
 		}
@@ -613,7 +613,7 @@ private:
 		VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 		VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + MODELS_PATH.size();
 		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
 			imageCount = swapChainSupport.capabilities.maxImageCount;
 		}
@@ -999,10 +999,10 @@ private:
 	void createUniformBuffers() {
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-		uniformBuffers.resize(swapChainImages.size()*TEXTURES_PATH.size());
-		uniformBuffersMemory.resize(swapChainImages.size()*TEXTURES_PATH.size());
+		uniformBuffers.resize(swapChainImages.size()*MODELS_PATH.size());
+		uniformBuffersMemory.resize(swapChainImages.size()*MODELS_PATH.size());
 
-		for (size_t i = 0; i < swapChainImages.size()*TEXTURES_PATH.size(); i++) {
+		for (size_t i = 0; i < swapChainImages.size()*MODELS_PATH.size(); i++) {
 			createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 				| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 		}
@@ -1039,9 +1039,9 @@ private:
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
-    for (uint32_t i = 0; i < TEXTURES_PATH.size(); i++) {
-      updateDescriptorSets(i);
-    }
+		for (uint32_t i = 0; i < TEXTURES_PATH.size(); i++) {
+			updateDescriptorSets(i);
+		}
 	}
 
 	void createCommandBuffers() {
@@ -1082,16 +1082,16 @@ private:
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-      VkDeviceSize offsets[] = { 0 };
+			VkDeviceSize offsets[] = { 0 };
 			// For each 3D model, bind its vertex and indices and the right descriptor set for its texture
 			for (uint32_t j = 0; j < MODELS_PATH.size(); j++) {
 				VkBuffer vertexCmdBuffers[] = { vertexBuffers[j] };
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexCmdBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexCmdBuffers, offsets);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffers[j], 0, VK_INDEX_TYPE_UINT32);
 				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[j], 0, nullptr);
 				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices[j].size()), 1, 0, 0, 0);
 			}
-      vkCmdEndRenderPass(commandBuffers[i]);
+			vkCmdEndRenderPass(commandBuffers[i]);
 
 			if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
 				throw std::runtime_error("failed to record command buffer!");
