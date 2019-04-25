@@ -1,18 +1,32 @@
-#include "SGNode.h"
+#include "Scene.h"
 
-class Scene {
-public:
-	Scene() {
-		sceneRoot = SGNode();
-	}
+Scene::Scene() {
+	sceneRoot = SGNode();
+	camera = Camera();
+}
 
-	SGNode getRoot() {
-		return sceneRoot;
-	}
+Scene::Scene(Camera sceneCamera) {
+	sceneRoot = SGNode();
+	camera = sceneCamera;
+}
 
-	void setRoot(SGNode newRoot) {
-		sceneRoot = newRoot;
-	}
-private:
-	SGNode sceneRoot;
-};
+SGNode* Scene::getRoot() {
+	return &sceneRoot;
+}
+
+void Scene::setRoot(SGNode newRoot) {
+	sceneRoot = newRoot;
+}
+
+Camera* Scene::getCamera() {
+	return &camera;
+}
+
+void Scene::setCamera(Camera newCamera) {
+	camera = newCamera;
+}
+
+void Scene::viewSceneGraph() {
+	std::cout << "Scene" << std::endl;
+	sceneRoot.viewSceneNode(1);
+}

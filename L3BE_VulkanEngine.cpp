@@ -438,7 +438,7 @@ private:
 		// Check if all required extensions are included in the supported extensions list
 		std::vector<bool> extensionsAreSupported(createInfo.enabledExtensionCount);
 		const char ** requiredExtensions = glfwGetRequiredInstanceExtensions(&createInfo.enabledExtensionCount);
-		for (int i = 0; i < createInfo.enabledExtensionCount; i++) {
+		for (size_t i = 0; i < createInfo.enabledExtensionCount; i++) {
 			for (const auto& extension : extensions) {
 				if (strcmp(requiredExtensions[i], extension) == 0) {
 					extensionsAreSupported[i] = true;
@@ -448,7 +448,7 @@ private:
 				extensionsAreSupported[i] = false;
 			}
 		}
-		for (int i = 0; i < createInfo.enabledExtensionCount; i++) {
+		for (size_t i = 0; i < createInfo.enabledExtensionCount; i++) {
 			if (!extensionsAreSupported[i]) {
 				std::cout << "\t" << requiredExtensions[i] << " is not supported!" << std::endl;
 			}
