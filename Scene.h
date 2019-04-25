@@ -12,6 +12,7 @@ public:
 	Camera* getCamera();
 	void setCamera(Camera newCamera);
 	void viewSceneGraph();
+	int nbElements();
 private:
 	SGNode sceneRoot;
 	Camera camera;

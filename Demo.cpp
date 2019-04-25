@@ -3,6 +3,8 @@
 #include "Object.h"
 #include "Camera.h"
 
+Scene scene;
+
 int main(void) {
 	// DEMO
 	// In this demo, Scene Graph Nodes must be created explicitly, 
@@ -10,7 +12,7 @@ int main(void) {
 	// when an instance is placed inside a scene, according to the instances hierarchy.
 
 	// Scene creation (default Camera)
-	Scene scene = Scene();
+	scene = Scene();
 
 	// Ground object
 	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, 0.0f, 10.0f);
@@ -39,6 +41,8 @@ int main(void) {
 
 	// Visualize hierarchy
 	scene.viewSceneGraph();
+
+	// Launch application
 
 	return 0;
 }

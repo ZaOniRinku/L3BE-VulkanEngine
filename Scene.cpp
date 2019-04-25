@@ -30,3 +30,7 @@ void Scene::viewSceneGraph() {
 	std::cout << "Scene" << std::endl;
 	sceneRoot.viewSceneNode(1);
 }
+
+int Scene::nbElements() {
+	return sceneRoot.nbElements();
+}

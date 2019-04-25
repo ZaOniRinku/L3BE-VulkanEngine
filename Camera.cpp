@@ -26,12 +26,24 @@ void Camera::setPosition(glm::vec3 newPosition) {
 	pos = newPosition;
 }
 
+void Camera::setPosition(float x, float y, float z) {
+	pos = { x, y, z };
+}
+
 glm::vec3 Camera::getFront() {
 	return front;
 }
 
 void Camera::setFront(glm::vec3 newFront) {
 	front = newFront;
+}
+
+void Camera::setFront(float x, float y, float z) {
+	front = { x, y, z };
+}
+
+glm::vec3 Camera::getUp() {
+	return up;
 }
 
 float Camera::getMovementSpeed() {

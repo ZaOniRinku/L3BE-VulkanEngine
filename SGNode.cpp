@@ -43,3 +43,11 @@ void SGNode::viewSceneNode(int level) {
 		child->viewSceneNode(level + 1);
 	}
 }
+
+int SGNode::nbElements() {
+	int somme = 0;
+	for (SGNode* child : children) {
+		somme += child->nbElements();
+	}
+	return children.size() + somme;
+}

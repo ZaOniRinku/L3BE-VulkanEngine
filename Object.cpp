@@ -19,7 +19,7 @@ Object::Object(std::string mPath, std::string tPath, float x, float y, float z, 
 	//loadModel();
 	node = nullptr;
 }
-/*
+
 void Object::move(glm::vec3 movePosition) {
 	for (Vertex vertex : modelVertices) {
 		vertex.pos = vertex.pos + (movePosition * scale);
@@ -37,7 +37,7 @@ void Object::move(float x, float y, float z) {
 		child->getObject()->move(x, y, z);
 	}
 }
-*/
+
 void Object::rescale(float newScale) {
 	for (Vertex vertex : modelVertices) {
 		vertex.pos = (vertex.pos / scale) * newScale;
@@ -64,41 +64,74 @@ std::string Object::getModelPath() {
 	return modelPath;
 }
 
-/*void Object::loadModel() {
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-	std::string warn, err;
+std::string Object::getTexturePath() {
+	return texturePath;
+}
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPath.c_str())) {
-		throw std::runtime_error(warn + err);
-	}
+std::vector<Vertex> Object::getModelVertices() {
+	return modelVertices;
+}
 
-	std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
+std::vector<uint32_t> Object::getModelIndices() {
+	return modelIndices;
+}
 
-	for (const auto& shape : shapes) {
-		for (const auto& index : shape.mesh.indices) {
-			Vertex vertex = {};
-			vertex.pos = {
-				(attrib.vertices[3 * index.vertex_index + 0] + pos.x) * scale,
-				(attrib.vertices[3 * index.vertex_index + 1] + pos.y) * scale,
-				(attrib.vertices[3 * index.vertex_index + 2] + pos.z) * scale
-			};
-			vertex.texCoord = {
-				attrib.texcoords[2 * index.texcoord_index + 0],
-				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-			};
-			vertex.color = {
-				1.0f,
-				1.0f,
-				1.0f
-			};
+VkBuffer& Object::getVertexBuffer() {
+	return vertexBuffer;
+}
 
-			if (uniqueVertices.count(vertex) == 0) {
-				uniqueVertices[vertex] = static_cast<uint32_t>(modelVertices.size());
-				modelVertices.push_back(vertex);
-			}
-			modelIndices.push_back(uniqueVertices[vertex]);
-		}
-	}
-}*/
+VkDeviceMemory& Object::getVertexBufferMemory() {
+	return vertexBufferMemory;
+}
+
+VkBuffer& Object::getIndexBuffer() {
+	return indexBuffer;
+}
+
+VkDeviceMemory& Object::getIndexBufferMemory() {
+	return indexBufferMemory;
+}
+
+uint32_t Object::getMipLevel() {
+	return mipLevel;
+}
+
+void Object::setMipLevel(uint32_t newMipLevel) {
+	mipLevel = newMipLevel;
+}
+
+VkImage& Object::getTextureImage() {
+	return textureImage;
+}
+
+void Object::setTextureImage(VkImage newTextureImage) {
+	textureImage = newTextureImage;
+}
+
+VkDeviceMemory& Object::getTextureImageMemory() {
+	return textureImageMemory;
+}
+
+void Object::setTextureImageMemory(VkDeviceMemory newTextureImageMemory) {
+	textureImageMemory = newTextureImageMemory;
+}
+
+VkImageView& Object::getTextureImageView() {
+	return textureImageView;
+}
+
+void Object::setTextureImageView(VkImageView newTextureImageView) {
+	textureImageView = newTextureImageView;
+}
+
+VkSampler& Object::getTextureSampler() {
+	return textureSampler;
+}
+
+void Object::setTextureSampler(VkSampler newTextureSampler) {
+	textureSampler = newTextureSampler;
+}
+
+VkDescriptorSet& Object::getDescriptorSet() {
+	return descriptorSet;
+}

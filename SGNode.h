@@ -17,6 +17,7 @@ public:
 	Object* getObject();
 	void setObject(Object newObject);
 	void viewSceneNode(int level);
+	int nbElements();
 private:
 	std::vector<SGNode*> children;
 	Object* object;
