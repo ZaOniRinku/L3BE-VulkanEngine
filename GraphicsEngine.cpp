@@ -33,11 +33,6 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-const std::vector<std::string> MODELS_PATH = { "models/table.obj", "models/dice.obj", "models/dice.obj", "models/plan.obj"};
-const std::vector<glm::vec3> POSITIONS = { {0.0f, 0.1f, 0.0f}, {-1.8f, 10.4f, -3.5f}, {4.5f, 10.4f, 3.2f}, {0.0f, 0.0f, 0.0f}};
-const std::vector<float> SCALE_RATIO = { 0.5f, 0.07f, 0.07f, 10.0f};
-const std::vector<std::string> TEXTURES_PATH = { "textures/table.png", "textures/texturede.png", "textures/texturede.png", "textures/textureplan.jpg"};
-
 struct UniformBufferObject {
 	alignas(16) glm::mat4 model;
 	alignas(16) glm::mat4 view;
@@ -51,55 +46,6 @@ const std::vector<const char*> validationLayers = {
 const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
-
-struct Vertex {
-	glm::vec3 pos;
-	glm::vec3 color;
-	glm::vec2 texCoord;
-
-	static VkVertexInputBindingDescription getBindingDescription() {
-		VkVertexInputBindingDescription bindingDescription = {};
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		return bindingDescription;
-	}
-
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-		return attributeDescriptions;
-	}
-
-	bool operator==(const Vertex& other) const {
-		return pos == other.pos && color == other.color && texCoord == other.texCoord;
-	}
-};
-
-namespace std {
-	template<> struct hash<Vertex> {
-		size_t operator()(Vertex const& vertex) const {
-			return ((hash<glm::vec3>()(vertex.pos) ^
-				(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-				(hash<glm::vec2>()(vertex.texCoord) << 1);
-		}
-	};
-}
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -150,6 +96,10 @@ struct SwapChainSupportDetails {
 
 class GraphicsEngine {
 public:
+	void setScene(Scene* newScene) {
+		scene = newScene;
+	}
+
 	void run() {
 		initWindow();
 		initVulkan();
@@ -199,25 +149,22 @@ private:
 
 	// Camera
 	float savedZAxis = 0.3f;
-	glm::vec3 cameraPosition = glm::vec3(-3.0f, 0.0f, 0.3f);
-	glm::vec3 cameraFront = glm::vec3(1.0f, 0.0f, 0.0f);
-	glm::vec3 cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
 	// Movement speed
-	float deltaTime = 0.0f;
-	float lastFrame = 0.0f;
+	double deltaTime = 0.0f;
+	double lastFrame = 0.0f;
 	// Mouse movement
 	float firstMouse = true;
 	float sensitivity = 0.05f;
-	float xMouseLast = WIDTH / 2;
-	float yMouseLast = HEIGHT / 2;
+	double xMouseLast = WIDTH / 2.f;
+	double yMouseLast = HEIGHT / 2.f;
 	float pitch = 0.0f;
 	float yaw = 0.0f;
 
 	void inputsManagement(GLFWwindow* window) {
-		float currentFrame = glfwGetTime();
+		double currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		float movementSpeed = 2.5f * deltaTime;
+		double movementSpeed = 2.5f * deltaTime;
 		Camera* camera = scene->getCamera();
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 			camera->setPosition(camera->getPosition() + (camera->getFront() * camera->getMovementSpeed()));
@@ -254,12 +201,12 @@ private:
 			app->firstMouse = false;
 		}
 
-		float xOffset = (xPos - app->xMouseLast) * app->sensitivity;
-		float yOffset = (yPos - app->yMouseLast) * app->sensitivity;
-		app->xMouseLast = xPos;
-		app->yMouseLast = yPos;
-		app->yaw = glm::mod(app->yaw + xOffset, 360.0f);
-		app->pitch += yOffset;
+		double xOffset = (xPos - app->xMouseLast) * app->sensitivity;
+		double yOffset = (yPos - app->yMouseLast) * app->sensitivity;
+		app->xMouseLast = (float) xPos;
+		app->yMouseLast = (float) yPos;
+		app->yaw = glm::mod(app->yaw + (float) xOffset, 360.0f);
+		app->pitch += (float) yOffset;
 
 		if (app->pitch > 89.0f) {
 			app->pitch = 89.0f;
@@ -273,6 +220,7 @@ private:
 		front.y = cos(glm::radians(app->pitch)) * sin(glm::radians(app->yaw)) * -1;
 		front.z = sin(glm::radians(app->pitch)) * -1;
 		Camera* camera = app->scene->getCamera();
+		camera = app->scene->getCamera();
 		camera->setFront(glm::normalize(front));
 	}
 
@@ -1033,7 +981,7 @@ private:
 				if (vkAllocateDescriptorSets(device, &allocInfo, &elements.front()->getObject()->getDescriptorSet()) != VK_SUCCESS) {
 					throw std::runtime_error("failed to allocate descriptor sets!");
 				}
-				updateDescriptorSets(elements.front(),i);
+				updateDescriptorSets(elements.front(), (int) i);
 				elements.insert(elements.end(), elements.front()->getChildren().begin(), elements.front()->getChildren().end());
 				elements.erase(elements.begin());
 			}
@@ -1914,7 +1862,46 @@ private:
 };
 
 int main() {
+	// DEMO
+	// In this demo, Scene Graph Nodes must be created explicitly, 
+	// but in an editor with a UI, SG Nodes can be created automatically 
+	// when an instance is placed inside a scene, according to the instances hierarchy.
+
+	// Scene creation (default Camera)
+	Scene scene = Scene();
+
+	// Ground object
+	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, 0.0f, 10.0f);
+	SGNode groundNode = SGNode(&ground);
+	scene.getRoot()->addChild(&groundNode);
+
+	// Table object
+	Object table = Object("models/table.obj", "textures/table.png", 0.0f, 0.1f, 0.0f, 0.5f);
+	SGNode tableNode = SGNode(&table);
+	groundNode.addChild(&tableNode);
+
+	// Dice 1 object
+	Object dice1 = Object("models/dice.obj", "textures/texturede.png", -1.8f, 10.4f, -3.5f, 0.07f);
+	SGNode dice1Node = SGNode(&dice1);
+	tableNode.addChild(&dice1Node);
+
+	// Dice 2 object
+	Object dice2 = Object("models/dice.obj", "textures/texturede.png", 4.5f, 10.4f, 3.2f, 0.07f);
+	SGNode dice2Node = SGNode(&dice2);
+	tableNode.addChild(&dice2Node);
+
+	// Dice 3 object
+	Object dice3 = Object("models/dice.obj", "textures/texturede.png", 2.4f, 10.4f, 4.1f, 0.07f);
+	SGNode dice3Node = SGNode(&dice3);
+	scene.getRoot()->addChild(&dice3Node);
+
+	// Visualize hierarchy
+	scene.viewSceneGraph();
+
+	// Launch application
+
 	GraphicsEngine app;
+	app.setScene(&scene);
 
 	try {
 		app.run();
