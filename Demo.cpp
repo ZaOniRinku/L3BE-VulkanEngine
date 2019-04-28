@@ -1,7 +1,4 @@
-#include "Scene.h"
-#include "SGNode.h"
-#include "Object.h"
-#include "Camera.h"
+#include "GraphicsEngine.h"
 
 Scene scene;
 
@@ -43,6 +40,16 @@ int main(void) {
 	scene.viewSceneGraph();
 
 	// Launch application
+	GraphicsEngine app;
+	app.setScene(&scene);
 
-	return 0;
+	try {
+		app.run();
+	}
+	catch (const std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }

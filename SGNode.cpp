@@ -49,5 +49,5 @@ int SGNode::nbElements() {
 	for (SGNode* child : children) {
 		somme += child->nbElements();
 	}
-	return children.size() + somme;
+	return (int) children.size() + somme;
 }

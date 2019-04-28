@@ -1,32 +1,4 @@
-#define GLFW_INCLUDE_VULKAN
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_ENABLE_EXPERIMENTAL
-#define STB_IMAGE_IMPLEMENTATION
-#define TINYOBJLOADER_IMPLEMENTATION
-
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <stdexcept>
-#include <functional>
-#include <cstdlib>
-#include <vector>
-#include <cstring>
-#include <optional>
-#include <set>
-#include <algorithm>
-#include <fstream>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <chrono>
-#include <array>
-#include <unordered_map>
-#include <glm/gtx/hash.hpp>
-#include <stb_image.h>
-#include <tiny_obj_loader.h>
-
-#include "Scene.h"
+#include "GraphicsEngine.h"
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -133,6 +105,7 @@ private:
 	size_t currentFrame = 0;
 	bool framebufferResized = false;
 	VkDescriptorPool descriptorPool;
+	std::vector<VkDescriptorSet> descriptorSets;
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
@@ -161,34 +134,48 @@ private:
 	float yaw = 0.0f;
 
 	void inputsManagement(GLFWwindow* window) {
+		Camera* camera = scene->getCamera();
 		double currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		double movementSpeed = 2.5f * deltaTime;
-		Camera* camera = scene->getCamera();
+		float movementSpeed = camera->getMovementSpeed() * deltaTime;
+		glm::vec3 camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
+		glm::vec3 camFront = { camera->getFrontX(), camera->getFrontY(), camera->getFrontZ() };
+		glm::vec3 camUp = { camera->getUpX(), camera->getUpY(), camera->getUpZ() };
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition() + (camera->getFront() * camera->getMovementSpeed()));
+			glm::vec3 newPos = camPos + (camFront * movementSpeed);
+			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
+		camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition() - (camera->getFront() * camera->getMovementSpeed()));
+			glm::vec3 newPos = camPos - (camFront * movementSpeed);
+			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
+		camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition() - (glm::normalize(glm::cross(camera->getFront(), camera->getUp())) * camera->getMovementSpeed()));
+			glm::vec3 newPos = camPos - (glm::normalize(glm::cross(camFront, camUp)) * movementSpeed);
+			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
+		camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition() + (glm::normalize(glm::cross(camera->getFront(), camera->getUp())) * camera->getMovementSpeed()));
+			glm::vec3 newPos = camPos + (glm::normalize(glm::cross(camFront, camUp)) * movementSpeed);
+			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
+		camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition() + (camera->getUp() * camera->getMovementSpeed()));
+			glm::vec3 newPos = camPos + (camUp * movementSpeed);
+			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
+		camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition() - (camera->getUp() * camera->getMovementSpeed()));
+			glm::vec3 newPos = camPos - (camUp * movementSpeed);
+			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
 		// Lock z axis
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-			camera->setPosition(camera->getPosition().x, camera->getPosition().y, savedZAxis);
+			camera->setPosition(camera->getPositionX(), camera->getPositionY(), savedZAxis);
 		}
-		savedZAxis = camera->getPosition().z;
+		savedZAxis = camera->getPositionZ();
 	}
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
@@ -221,7 +208,8 @@ private:
 		front.z = sin(glm::radians(app->pitch)) * -1;
 		Camera* camera = app->scene->getCamera();
 		camera = app->scene->getCamera();
-		camera->setFront(glm::normalize(front));
+		glm::vec3 frontN = glm::normalize(front);
+		camera->setFront(frontN.x, frontN.y, frontN.z);
 	}
 
 	static std::vector<char> readFile(const std::string& filename) {
@@ -558,7 +546,7 @@ private:
 		VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 		VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + scene->nbElements();
+		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
 			imageCount = swapChainSupport.capabilities.maxImageCount;
 		}
@@ -922,7 +910,9 @@ private:
 			createTextureImage(elements.front());
 			createTextureImageView(elements.front());
 			createTextureSampler(elements.front());
-			elements.insert(elements.end(), elements.front()->getChildren().begin(), elements.front()->getChildren().end());
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
 			elements.erase(elements.begin());
 		}
 	}
@@ -935,14 +925,17 @@ private:
 			loadModel(elements.front());
 			createVertexBuffer(elements.front());
 			createIndexBuffer(elements.front());
-			elements.insert(elements.end(), elements.front()->getChildren().begin(), elements.front()->getChildren().end());
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
 			elements.erase(elements.begin());
 		}
 	}
 
 	void createUniformBuffers() {
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
+		uniformBuffers.resize(swapChainImages.size());
+		uniformBuffersMemory.resize(swapChainImages.size());
 		for (size_t i = 0; i < swapChainImages.size(); i++) {
 			createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 				| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
@@ -975,14 +968,19 @@ private:
 		allocInfo.descriptorSetCount = static_cast<uint32_t>(scene->nbElements());
 		allocInfo.pSetLayouts = layouts.data();
 
+		descriptorSets.resize(scene->nbElements());
+		if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+			throw std::runtime_error("failed to allocate descriptor sets!");
+		}
+		size_t nbDesc = 0;
 		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
 		for (size_t i = 0; i < swapChainImages.size(); i++) {
 			while (!elements.empty()) {
-				if (vkAllocateDescriptorSets(device, &allocInfo, &elements.front()->getObject()->getDescriptorSet()) != VK_SUCCESS) {
-					throw std::runtime_error("failed to allocate descriptor sets!");
+				updateDescriptorSets(elements.front(), (int) i, nbDesc);
+				nbDesc++;
+				for (SGNode* child : elements.front()->getChildren()) {
+					elements.insert(elements.end(), child);
 				}
-				updateDescriptorSets(elements.front(), (int) i);
-				elements.insert(elements.end(), elements.front()->getChildren().begin(), elements.front()->getChildren().end());
 				elements.erase(elements.begin());
 			}
 		}
@@ -1031,12 +1029,14 @@ private:
 			std::vector<SGNode*> elements = scene->getRoot()->getChildren();
 			while (!elements.empty()) {
 				Object* obj = elements.front()->getObject();
-				VkBuffer vertexCmdBuffers[] = { obj->getVertexBuffer() };
+				VkBuffer vertexCmdBuffers[] = { *obj->getVertexBuffer() };
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexCmdBuffers, offsets);
-				vkCmdBindIndexBuffer(commandBuffers[i], obj->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &obj->getDescriptorSet(), 0, nullptr);
-				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(obj->getModelIndices().size()), 1, 0, 0, 0);
-				elements.insert(elements.end(), elements.front()->getChildren().begin(), elements.front()->getChildren().end());
+				vkCmdBindIndexBuffer(commandBuffers[i], *obj->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, obj->getDescriptorSet(0), 0, nullptr);
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(obj->getModelIndices()->size()), 1, 0, 0, 0);
+				for (SGNode* child : elements.front()->getChildren()) {
+					elements.insert(elements.end(), child);
+				}
 				elements.erase(elements.begin());
 			}
 			vkCmdEndRenderPass(commandBuffers[i]);
@@ -1312,9 +1312,12 @@ private:
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();*/
 		Camera* camera = scene->getCamera();
+		glm::vec3 camPos = { camera->getPositionX(), camera->getPositionY(), camera->getPositionZ() };
+		glm::vec3 camFront = { camera->getFrontX(), camera->getFrontY(), camera->getFrontZ() };
+		glm::vec3 camUp = { camera->getUpX(), camera->getUpY(), camera->getUpZ() };
 		UniformBufferObject ubo = {};
 		ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubo.view = glm::lookAt(camera->getPosition(), camera->getPosition() + camera->getFront(), camera->getUp());
+		ubo.view = glm::lookAt(camPos, camPos + camFront, camUp);
 		ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 		// Render the right way (openGL standards -> Vulkan standards)
 		ubo.proj[1][1] *= -1;
@@ -1590,17 +1593,16 @@ private:
 		VkDeviceMemory stagingBufferMemory;
 		createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 			| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
 		void *data;
 		vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
 		memcpy(data, pixels, static_cast<size_t>(imageSize));
 		vkUnmapMemory(device, stagingBufferMemory);
 		stbi_image_free(pixels);
-		createImage(texWidth, texHeight, obj->getMipLevel(), VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, obj->getTextureImage(), obj->getTextureImageMemory());
+		createImage(texWidth, texHeight, obj->getMipLevel(), VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *obj->getTextureImage(), *obj->getTextureImageMemory());
 
-		transitionImageLayout(obj->getTextureImage(), VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, obj->getMipLevel());
-		copyBufferToImage(stagingBuffer, obj->getTextureImage(), static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-		generateMipmaps(obj->getTextureImage(), VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, obj->getMipLevel());
+		transitionImageLayout(*obj->getTextureImage(), VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, obj->getMipLevel());
+		copyBufferToImage(stagingBuffer, *obj->getTextureImage(), static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+		generateMipmaps(*obj->getTextureImage(), VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, obj->getMipLevel());
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1608,7 +1610,7 @@ private:
 
 	void createTextureImageView(SGNode* node) {
 		Object* obj = node->getObject();
-		obj->setTextureImageView(createImageView(obj->getTextureImage(), VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, obj->getMipLevel()));
+		obj->setTextureImageView(createImageView(*obj->getTextureImage(), VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT, obj->getMipLevel()));
 	}
 
 	void createTextureSampler(SGNode* node) {
@@ -1631,7 +1633,7 @@ private:
 		samplerInfo.maxLod = static_cast<float> (obj->getMipLevel());
 		samplerInfo.mipLodBias = 0.0f;
 
-		if (vkCreateSampler(device, &samplerInfo, nullptr, &obj->getTextureSampler()) != VK_SUCCESS) {
+		if (vkCreateSampler(device, &samplerInfo, nullptr, obj->getTextureSampler()) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create texture sampler!");
 		}
 	}
@@ -1653,9 +1655,9 @@ private:
 			for (const auto& index : shape.mesh.indices) {
 				Vertex vertex = {};
 				vertex.pos = {
-					(attrib.vertices[3 * index.vertex_index + 0] + obj->getPosition().x) * obj->getScale(),
-					(attrib.vertices[3 * index.vertex_index + 1] + obj->getPosition().y) * obj->getScale(),
-					(attrib.vertices[3 * index.vertex_index + 2] + obj->getPosition().z) * obj->getScale()
+					(attrib.vertices[3 * index.vertex_index + 0] + obj->getPositionX()) * obj->getScale(),
+					(attrib.vertices[3 * index.vertex_index + 1] + obj->getPositionY()) * obj->getScale(),
+					(attrib.vertices[3 * index.vertex_index + 2] + obj->getPositionZ()) * obj->getScale()
 				};
 				vertex.texCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
@@ -1668,17 +1670,17 @@ private:
 				};
 
 				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(obj->getModelVertices().size());
-					obj->getModelVertices().push_back(vertex);
+					uniqueVertices[vertex] = static_cast<uint32_t>(obj->getModelVertices()->size());
+					obj->getModelVertices()->push_back(vertex);
 				}
-				obj->getModelIndices().push_back(uniqueVertices[vertex]);
+				obj->getModelIndices()->push_back(uniqueVertices[vertex]);
 			}
 		}
 	}
 
 	void createVertexBuffer(SGNode* node) {
 		Object* obj = node->getObject();
-		VkDeviceSize bufferSize = sizeof(obj->getModelVertices()[0]) * obj->getModelVertices().size();
+		VkDeviceSize bufferSize = sizeof(obj->getModelVertices()[0]) * obj->getModelVertices()->size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1686,11 +1688,11 @@ private:
 
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, obj->getModelVertices().data(), (size_t)bufferSize);
+		memcpy(data, obj->getModelVertices()->data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, obj->getVertexBuffer(), obj->getVertexBufferMemory());
-		copyBuffer(stagingBuffer, obj->getVertexBuffer(), bufferSize);
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *obj->getVertexBuffer(), *obj->getVertexBufferMemory());
+		copyBuffer(stagingBuffer, *obj->getVertexBuffer(), bufferSize);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -1698,7 +1700,7 @@ private:
 
 	void createIndexBuffer(SGNode* node) {
 		Object* obj = node->getObject();
-		VkDeviceSize bufferSize = sizeof(obj->getModelIndices()[0]) * obj->getModelIndices().size();
+		VkDeviceSize bufferSize = sizeof(obj->getModelIndices()[0]) * obj->getModelIndices()->size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1706,18 +1708,19 @@ private:
 
 		void* data;
 		vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-		memcpy(data, obj->getModelIndices().data(), (size_t)bufferSize);
+		memcpy(data, obj->getModelIndices()->data(), (size_t)bufferSize);
 		vkUnmapMemory(device, stagingBufferMemory);
 
-		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, obj->getIndexBuffer(), obj->getIndexBufferMemory());
-		copyBuffer(stagingBuffer, obj->getIndexBuffer(), bufferSize);
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, *obj->getIndexBuffer(), *obj->getIndexBufferMemory());
+		copyBuffer(stagingBuffer, *obj->getIndexBuffer(), bufferSize);
 
 		vkDestroyBuffer(device, stagingBuffer, nullptr);
 		vkFreeMemory(device, stagingBufferMemory, nullptr);
 	}
 
-	void updateDescriptorSets(SGNode* node, int frame) {
+	void updateDescriptorSets(SGNode* node, int frame, int nbDesc) {
 		Object* obj = node->getObject();
+		obj->addDescriptorSet(&descriptorSets[nbDesc]);
 		VkDescriptorBufferInfo bufferInfo = {};
 		bufferInfo.buffer = uniformBuffers[frame];
 		bufferInfo.offset = 0;
@@ -1725,12 +1728,12 @@ private:
 
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = obj->getTextureImageView();
-		imageInfo.sampler = obj->getTextureSampler();
+		imageInfo.imageView = *obj->getTextureImageView();
+		imageInfo.sampler = *obj->getTextureSampler();
 
 		std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = obj->getDescriptorSet();
+		descriptorWrites[0].dstSet = descriptorSets[nbDesc];
 		descriptorWrites[0].dstBinding = 0;
 		descriptorWrites[0].dstArrayElement = 0;
 		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1738,7 +1741,7 @@ private:
 		descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[1].dstSet = obj->getDescriptorSet();
+		descriptorWrites[1].dstSet = descriptorSets[nbDesc];
 		descriptorWrites[1].dstBinding = 1;
 		descriptorWrites[1].dstArrayElement = 0;
 		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1826,12 +1829,14 @@ private:
 
 		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
 		while (!elements.empty()) {
-			vkDestroySampler(device, elements.front()->getObject()->getTextureSampler(), nullptr);
-			vkDestroyImageView(device, elements.front()->getObject()->getTextureImageView(), nullptr);
+			vkDestroySampler(device, *elements.front()->getObject()->getTextureSampler(), nullptr);
+			vkDestroyImageView(device, *elements.front()->getObject()->getTextureImageView(), nullptr);
 
-			vkDestroyImage(device, elements.front()->getObject()->getTextureImage(), nullptr);
-			vkFreeMemory(device, elements.front()->getObject()->getTextureImageMemory(), nullptr);
-			elements.insert(elements.end(), elements.front()->getChildren().begin(), elements.front()->getChildren().end());
+			vkDestroyImage(device, *elements.front()->getObject()->getTextureImage(), nullptr);
+			vkFreeMemory(device, *elements.front()->getObject()->getTextureImageMemory(), nullptr);
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
 			elements.erase(elements.begin());
 		}
 
@@ -1839,10 +1844,14 @@ private:
 
 		elements = scene->getRoot()->getChildren();
 		while (!elements.empty()) {
-			vkDestroyBuffer(device, elements.front()->getObject()->getIndexBuffer(), nullptr);
-			vkFreeMemory(device, elements.front()->getObject()->getIndexBufferMemory(), nullptr);
-			vkDestroyBuffer(device, elements.front()->getObject()->getVertexBuffer(), nullptr);
-			vkFreeMemory(device, elements.front()->getObject()->getVertexBufferMemory(), nullptr);
+			vkDestroyBuffer(device, *elements.front()->getObject()->getIndexBuffer(), nullptr);
+			vkFreeMemory(device, *elements.front()->getObject()->getIndexBufferMemory(), nullptr);
+			vkDestroyBuffer(device, *elements.front()->getObject()->getVertexBuffer(), nullptr);
+			vkFreeMemory(device, *elements.front()->getObject()->getVertexBufferMemory(), nullptr);
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
+			elements.erase(elements.begin());
 		}
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {

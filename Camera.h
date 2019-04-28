@@ -1,18 +1,23 @@
 #pragma once
 #include <glm/glm.hpp>
 
-class Camera{
+class Camera {
 public:
 	Camera();
 	Camera(glm::vec3 cPos);
 	Camera(glm::vec3 cPos, glm::vec3 cFront);
-	glm::vec3 getPosition();
-	void setPosition(glm::vec3 newPosition);
+	Camera(glm::vec3 cPos, glm::vec3 cFront, float ms);
+	float getPositionX();
+	float getPositionY();
+	float getPositionZ();
 	void setPosition(float x, float y, float z);
-	glm::vec3 getFront();
-	void setFront(glm::vec3 newFront);
+	float getFrontX();
+	float getFrontY();
+	float getFrontZ();
 	void setFront(float x, float y, float z);
-	glm::vec3 getUp();
+	float getUpX();
+	float getUpY();
+	float getUpZ();
 	float getMovementSpeed();
 	void setMovementSpeed(float newMS);
 private:

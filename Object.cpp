@@ -44,8 +44,16 @@ void Object::rescale(float newScale) {
 	}
 }
 
-glm::vec3 Object::getPosition() {
-	return pos;
+float Object::getPositionX() {
+	return pos.x;
+}
+
+float Object::getPositionY() {
+	return pos.y;
+}
+
+float Object::getPositionZ() {
+	return pos.z;
 }
 
 float Object::getScale() {
@@ -68,28 +76,28 @@ std::string Object::getTexturePath() {
 	return texturePath;
 }
 
-std::vector<Vertex> Object::getModelVertices() {
-	return modelVertices;
+std::vector<Vertex>* Object::getModelVertices() {
+	return &modelVertices;
 }
 
-std::vector<uint32_t> Object::getModelIndices() {
-	return modelIndices;
+std::vector<uint32_t>* Object::getModelIndices() {
+	return &modelIndices;
 }
 
-VkBuffer& Object::getVertexBuffer() {
-	return vertexBuffer;
+VkBuffer* Object::getVertexBuffer() {
+	return &vertexBuffer;
 }
 
-VkDeviceMemory& Object::getVertexBufferMemory() {
-	return vertexBufferMemory;
+VkDeviceMemory* Object::getVertexBufferMemory() {
+	return &vertexBufferMemory;
 }
 
-VkBuffer& Object::getIndexBuffer() {
-	return indexBuffer;
+VkBuffer* Object::getIndexBuffer() {
+	return &indexBuffer;
 }
 
-VkDeviceMemory& Object::getIndexBufferMemory() {
-	return indexBufferMemory;
+VkDeviceMemory* Object::getIndexBufferMemory() {
+	return &indexBufferMemory;
 }
 
 uint32_t Object::getMipLevel() {
@@ -100,38 +108,42 @@ void Object::setMipLevel(uint32_t newMipLevel) {
 	mipLevel = newMipLevel;
 }
 
-VkImage& Object::getTextureImage() {
-	return textureImage;
+VkImage* Object::getTextureImage() {
+	return &textureImage;
 }
 
 void Object::setTextureImage(VkImage newTextureImage) {
 	textureImage = newTextureImage;
 }
 
-VkDeviceMemory& Object::getTextureImageMemory() {
-	return textureImageMemory;
+VkDeviceMemory* Object::getTextureImageMemory() {
+	return &textureImageMemory;
 }
 
 void Object::setTextureImageMemory(VkDeviceMemory newTextureImageMemory) {
 	textureImageMemory = newTextureImageMemory;
 }
 
-VkImageView& Object::getTextureImageView() {
-	return textureImageView;
+VkImageView* Object::getTextureImageView() {
+	return &textureImageView;
 }
 
 void Object::setTextureImageView(VkImageView newTextureImageView) {
 	textureImageView = newTextureImageView;
 }
 
-VkSampler& Object::getTextureSampler() {
-	return textureSampler;
+VkSampler* Object::getTextureSampler() {
+	return &textureSampler;
 }
 
 void Object::setTextureSampler(VkSampler newTextureSampler) {
 	textureSampler = newTextureSampler;
 }
 
-VkDescriptorSet& Object::getDescriptorSet() {
-	return descriptorSet;
+VkDescriptorSet* Object::getDescriptorSet(int index) {
+	return descriptorSets[index];
+}
+
+void Object::addDescriptorSet(VkDescriptorSet* newDescriptorSet) {
+	descriptorSets.push_back(newDescriptorSet);
 }

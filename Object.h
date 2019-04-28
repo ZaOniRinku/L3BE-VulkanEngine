@@ -66,29 +66,32 @@ public:
 	void move(glm::vec3 movePosition);
 	void move(float x, float y, float z);
 	void rescale(float newScale);
-	glm::vec3 getPosition();
+	float getPositionX();
+	float getPositionY();
+	float getPositionZ();
 	float getScale();
 	SGNode* getNode();
 	void setNode(SGNode* newNode);
 	std::string getModelPath();
 	std::string getTexturePath();
-	std::vector<Vertex> getModelVertices();
-	std::vector<uint32_t> getModelIndices();
-	VkBuffer& getVertexBuffer();
-	VkDeviceMemory& getVertexBufferMemory();
-	VkBuffer& getIndexBuffer();
-	VkDeviceMemory& getIndexBufferMemory();
+	std::vector<Vertex>* getModelVertices();
+	std::vector<uint32_t>* getModelIndices();
+	VkBuffer* getVertexBuffer();
+	VkDeviceMemory* getVertexBufferMemory();
+	VkBuffer* getIndexBuffer();
+	VkDeviceMemory* getIndexBufferMemory();
 	uint32_t getMipLevel();
 	void setMipLevel(uint32_t newMipLevel);
-	VkImage& getTextureImage();
+	VkImage* getTextureImage();
 	void setTextureImage(VkImage newTextureImage);
-	VkDeviceMemory& getTextureImageMemory();
+	VkDeviceMemory* getTextureImageMemory();
 	void setTextureImageMemory(VkDeviceMemory newTextureImageMemory);
-	VkImageView& getTextureImageView();
+	VkImageView* getTextureImageView();
 	void setTextureImageView(VkImageView newTextureImageView);
-	VkSampler& getTextureSampler();
+	VkSampler* getTextureSampler();
 	void setTextureSampler(VkSampler newTextureSampler);
-	VkDescriptorSet& getDescriptorSet();
+	VkDescriptorSet* getDescriptorSet(int index);
+	void addDescriptorSet(VkDescriptorSet* newDescriptorSet);
 private:
 	// Object's attributes
 	std::string modelPath;
@@ -113,5 +116,5 @@ private:
 	VkSampler textureSampler;
 	uint32_t mipLevel;
 
-	VkDescriptorSet descriptorSet;
+	std::vector<VkDescriptorSet*> descriptorSets;
 };
