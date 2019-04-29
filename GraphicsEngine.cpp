@@ -945,15 +945,15 @@ private:
 	void createDescriptorPool() {
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(scene->nbElements());
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(scene->nbElements());
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(scene->nbElements());
+		poolInfo.maxSets = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
 
 		if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create descriptor pool!");
@@ -961,28 +961,28 @@ private:
 	}
 
 	void createDescriptorSets() {
-		std::vector<VkDescriptorSetLayout> layouts(scene->nbElements(), descriptorSetLayout);
+		std::vector<VkDescriptorSetLayout> layouts(scene->nbElements()*swapChainImages.size(), descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.descriptorSetCount = static_cast<uint32_t>(scene->nbElements());
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
 		allocInfo.pSetLayouts = layouts.data();
 
-		descriptorSets.resize(scene->nbElements());
+		descriptorSets.resize(swapChainImages.size()*scene->nbElements());
 		if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 		size_t nbDesc = 0;
 		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
-		for (size_t i = 0; i < swapChainImages.size(); i++) {
-			while (!elements.empty()) {
-				updateDescriptorSets(elements.front(), (int) i, nbDesc);
+		while (!elements.empty()) {
+			for (size_t i = 0; i < swapChainImages.size(); i++) {
+				updateDescriptorSets(elements.front(), (int)i, nbDesc);
 				nbDesc++;
-				for (SGNode* child : elements.front()->getChildren()) {
-					elements.insert(elements.end(), child);
-				}
-				elements.erase(elements.begin());
 			}
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
+			elements.erase(elements.begin());
 		}
 	}
 
@@ -1032,7 +1032,7 @@ private:
 				VkBuffer vertexCmdBuffers[] = { *obj->getVertexBuffer() };
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexCmdBuffers, offsets);
 				vkCmdBindIndexBuffer(commandBuffers[i], *obj->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, obj->getDescriptorSet(0), 0, nullptr);
+				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, obj->getDescriptorSet(i), 0, nullptr);
 				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(obj->getModelIndices()->size()), 1, 0, 0, 0);
 				for (SGNode* child : elements.front()->getChildren()) {
 					elements.insert(elements.end(), child);
