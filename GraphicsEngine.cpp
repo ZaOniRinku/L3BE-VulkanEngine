@@ -171,6 +171,18 @@ private:
 			glm::vec3 newPos = camPos - (camUp * movementSpeed);
 			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+			scene->getRoot()->getChildren().front()->getObject()->move(-1.0f, 0.0f, 0.0f);
+		}
+		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+			scene->getRoot()->getChildren().front()->getObject()->move(1.0f, 0.0f, 0.0f);
+		}
+		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+			scene->getRoot()->getChildren().front()->getObject()->move(0.0f, -1.0f, 0.0f);
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+			scene->getRoot()->getChildren().front()->getObject()->move(0.0f, 1.0f, 0.0f);
+		}
 		// Lock z axis
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			camera->setPosition(camera->getPositionX(), camera->getPositionY(), savedZAxis);
@@ -918,7 +930,6 @@ private:
 	}
 
 	void createModels() {
-		int nbElements = scene->nbElements();
 		// Create models for all elements
 		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
 		while (!elements.empty()) {
@@ -1680,7 +1691,7 @@ private:
 
 	void createVertexBuffer(SGNode* node) {
 		Object* obj = node->getObject();
-		VkDeviceSize bufferSize = sizeof(obj->getModelVertices()[0]) * obj->getModelVertices()->size();
+		VkDeviceSize bufferSize = sizeof(obj->getModelVertices()->front()) * obj->getModelVertices()->size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1700,7 +1711,7 @@ private:
 
 	void createIndexBuffer(SGNode* node) {
 		Object* obj = node->getObject();
-		VkDeviceSize bufferSize = sizeof(obj->getModelIndices()[0]) * obj->getModelIndices()->size();
+		VkDeviceSize bufferSize = sizeof(obj->getModelIndices()->front()) * obj->getModelIndices()->size();
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
@@ -1880,10 +1891,10 @@ int main() {
 	Scene scene = Scene();
 
 	// Ground object
-	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, 0.0f, 10.0f);
+	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.4f, 10.0f);
 	SGNode groundNode = SGNode(&ground);
 	scene.getRoot()->addChild(&groundNode);
-
+	
 	// Table object
 	Object table = Object("models/table.obj", "textures/table.png", 0.0f, 0.1f, 0.0f, 0.5f);
 	SGNode tableNode = SGNode(&table);
