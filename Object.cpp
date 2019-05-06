@@ -147,3 +147,19 @@ VkDescriptorSet* Object::getDescriptorSet(int index) {
 void Object::addDescriptorSet(VkDescriptorSet* newDescriptorSet) {
 	descriptorSets.push_back(newDescriptorSet);
 }
+
+VkBuffer* Object::getUniformBuffer(int index) {
+	return uniformBuffers[index];
+}
+
+void Object::addUniformBuffer(VkBuffer* newUniformBuffer) {
+	uniformBuffers.push_back(newUniformBuffer);
+}
+
+VkDeviceMemory* Object::getUniformBufferMemory(int index) {
+	return uniformBuffersMemory[index];
+}
+
+void Object::addUniformBufferMemory(VkDeviceMemory* newUniformBufferMemory) {
+	uniformBuffersMemory.push_back(newUniformBufferMemory);
+}

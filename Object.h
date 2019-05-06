@@ -56,6 +56,12 @@ namespace std {
 	};
 }
 
+struct UniformBufferObject {
+	alignas(16) glm::mat4 model;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
+};
+
 class SGNode;
 
 class Object {
@@ -93,6 +99,10 @@ public:
 	void setTextureSampler(VkSampler newTextureSampler);
 	VkDescriptorSet* getDescriptorSet(int index);
 	void addDescriptorSet(VkDescriptorSet* newDescriptorSet);
+	VkBuffer* getUniformBuffer(int index);
+	void addUniformBuffer(VkBuffer* newUniformBuffer);
+	VkDeviceMemory* getUniformBufferMemory(int index);
+	void addUniformBufferMemory(VkDeviceMemory* newUniformBufferMemory);
 private:
 	// Object's attributes
 	std::string modelPath;
@@ -118,4 +128,7 @@ private:
 	uint32_t mipLevel;
 
 	std::vector<VkDescriptorSet*> descriptorSets;
+
+	std::vector<VkBuffer*> uniformBuffers;
+	std::vector<VkDeviceMemory*> uniformBuffersMemory;
 };

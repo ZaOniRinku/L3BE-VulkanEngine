@@ -5,12 +5,6 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-struct UniformBufferObject {
-	alignas(16) glm::mat4 model;
-	alignas(16) glm::mat4 view;
-	alignas(16) glm::mat4 proj;
-};
-
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_LUNARG_standard_validation"
 };
@@ -542,8 +536,7 @@ private:
 		}
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
 
-		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
-		for (size_t i = 0; i < swapChainImages.size(); i++) {
+		for (size_t i = 0; i < swapChainImages.size()*scene->nbElements(); i++) {
 			vkDestroyBuffer(device, uniformBuffers[i], nullptr);
 			vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
 		}
@@ -944,12 +937,25 @@ private:
 	}
 
 	void createUniformBuffers() {
+		int nbElems = scene->nbElements();
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-		uniformBuffers.resize(swapChainImages.size());
-		uniformBuffersMemory.resize(swapChainImages.size());
-		for (size_t i = 0; i < swapChainImages.size(); i++) {
-			createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-				| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+		uniformBuffers.resize(swapChainImages.size()*nbElems);
+		uniformBuffersMemory.resize(swapChainImages.size()*nbElems);
+
+		int nbBuffer = 0;
+		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
+		while (!elements.empty()) {
+			for (size_t i = 0; i < swapChainImages.size(); i++) {
+				createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+					| VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[nbBuffer], uniformBuffersMemory[nbBuffer]);
+				elements.front()->getObject()->addUniformBuffer(&uniformBuffers[nbBuffer]);
+				elements.front()->getObject()->addUniformBufferMemory(&uniformBuffersMemory[nbBuffer]);
+				nbBuffer++;
+			}
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
+			elements.erase(elements.begin());
 		}
 	}
 
@@ -1318,7 +1324,8 @@ private:
 		endSingleTimeCommands(commandBuffer);
 	}
 
-	void updateUniformBuffer(uint32_t currentImage) {
+	void updateUniformBuffer(SGNode* node, uint32_t currentImage) {
+		Object* obj = node->getObject();
 		//For time related manipulations
 		/*static auto startTime = std::chrono::high_resolution_clock::now();
 		auto currentTime = std::chrono::high_resolution_clock::now();
@@ -1328,20 +1335,17 @@ private:
 		glm::vec3 camFront = { camera->getFrontX(), camera->getFrontY(), camera->getFrontZ() };
 		glm::vec3 camUp = { camera->getUpX(), camera->getUpY(), camera->getUpZ() };
 		UniformBufferObject ubo = {};
-		float x = scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->getPositionX();
-		float y = scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->getPositionY();
-		float z = scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->getPositionZ();
 		// Using T * R * S transformation for models, default rotate is 90° on the X-axis so models got the angle they have on 3D modeling softwares
-		ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(x,y,z)) * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
+		ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(obj->getPositionX(), obj->getPositionY(), obj->getPositionZ())) * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(obj->getScale()));
 		ubo.view = glm::lookAt(camPos, camPos + camFront, camUp);
 		ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 		// Render the right way (openGL standards -> Vulkan standards)
 		ubo.proj[1][1] *= -1;
 
 		void* data;
-		vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+		vkMapMemory(device, *obj->getUniformBufferMemory(currentImage), 0, sizeof(ubo), 0, &data);
 		memcpy(data, &ubo, sizeof(ubo));
-		vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
+		vkUnmapMemory(device, *obj->getUniformBufferMemory(currentImage));
 	}
 
 	VkCommandBuffer beginSingleTimeCommands() {
@@ -1738,7 +1742,7 @@ private:
 		Object* obj = node->getObject();
 		obj->addDescriptorSet(&descriptorSets[nbDesc]);
 		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = uniformBuffers[frame];
+		bufferInfo.buffer = *obj->getUniformBuffer(frame);
 		bufferInfo.offset = 0;
 		bufferInfo.range = sizeof(UniformBufferObject);
 
@@ -1791,7 +1795,14 @@ private:
 			throw std::runtime_error("failed to acquire swap chain image!");
 		}
 
-		updateUniformBuffer(imageIndex);
+		std::vector<SGNode*> elements = scene->getRoot()->getChildren();
+		while (!elements.empty()) {
+			updateUniformBuffer(elements.front(),imageIndex);
+			for (SGNode* child : elements.front()->getChildren()) {
+				elements.insert(elements.end(), child);
+			}
+			elements.erase(elements.begin());
+		}
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1896,7 +1907,7 @@ int main() {
 	Scene scene = Scene();
 
 	// Ground object
-	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.4f, 10.0f);
+	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.1f, 10.0f);
 	SGNode groundNode = SGNode(&ground);
 	scene.getRoot()->addChild(&groundNode);
 	
@@ -1906,17 +1917,17 @@ int main() {
 	groundNode.addChild(&tableNode);
 
 	// Dice 1 object
-	Object dice1 = Object("models/dice.obj", "textures/texturede.png", -1.8f, 10.4f, -3.5f, 0.07f);
+	Object dice1 = Object("models/dice.obj", "textures/texturede.png", -0.2f, 0.5f, 0.7f, 0.1f);
 	SGNode dice1Node = SGNode(&dice1);
 	tableNode.addChild(&dice1Node);
 
 	// Dice 2 object
-	Object dice2 = Object("models/dice.obj", "textures/texturede.png", 4.5f, 10.4f, 3.2f, 0.07f);
+	Object dice2 = Object("models/dice.obj", "textures/texturede.png", 0.0f, 0.0f, 0.7f, 0.1f);
 	SGNode dice2Node = SGNode(&dice2);
 	tableNode.addChild(&dice2Node);
 
 	// Dice 3 object
-	Object dice3 = Object("models/dice.obj", "textures/texturede.png", 2.4f, 10.4f, 4.1f, 0.07f);
+	Object dice3 = Object("models/dice.obj", "textures/texturede.png", 1.0f, 0.0f, 0.0f, 0.1f);
 	SGNode dice3Node = SGNode(&dice3);
 	scene.getRoot()->addChild(&dice3Node);
 
