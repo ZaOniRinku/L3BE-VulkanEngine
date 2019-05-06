@@ -172,16 +172,16 @@ private:
 			camera->setPosition(newPos.x, newPos.y, newPos.z);
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-			scene->getRoot()->getChildren().front()->getObject()->move(-1.0f, 0.0f, 0.0f);
+			scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->move(0.001f, 0.0f, 0.0f);
 		}
 		if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-			scene->getRoot()->getChildren().front()->getObject()->move(1.0f, 0.0f, 0.0f);
+			scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->move(-0.001f, 0.0f, 0.0f);
 		}
 		if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-			scene->getRoot()->getChildren().front()->getObject()->move(0.0f, -1.0f, 0.0f);
+			scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->move(0.0f, -0.001f, 0.0f);
 		}
 		if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-			scene->getRoot()->getChildren().front()->getObject()->move(0.0f, 1.0f, 0.0f);
+			scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->move(0.0f, 0.001f, 0.0f);
 		}
 		// Lock z axis
 		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -954,11 +954,12 @@ private:
 	}
 
 	void createDescriptorPool() {
+		int nbElems = scene->nbElements();
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(nbElems*swapChainImages.size());
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(nbElems*swapChainImages.size());
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -972,14 +973,15 @@ private:
 	}
 
 	void createDescriptorSets() {
-		std::vector<VkDescriptorSetLayout> layouts(scene->nbElements()*swapChainImages.size(), descriptorSetLayout);
+		int nbElems = scene->nbElements();
+		std::vector<VkDescriptorSetLayout> layouts(nbElems*swapChainImages.size(), descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = descriptorPool;
-		allocInfo.descriptorSetCount = static_cast<uint32_t>(scene->nbElements()*swapChainImages.size());
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(nbElems*swapChainImages.size());
 		allocInfo.pSetLayouts = layouts.data();
 
-		descriptorSets.resize(swapChainImages.size()*scene->nbElements());
+		descriptorSets.resize(swapChainImages.size()*nbElems);
 		if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
@@ -1319,7 +1321,6 @@ private:
 	void updateUniformBuffer(uint32_t currentImage) {
 		//For time related manipulations
 		/*static auto startTime = std::chrono::high_resolution_clock::now();
-
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();*/
 		Camera* camera = scene->getCamera();
@@ -1327,7 +1328,11 @@ private:
 		glm::vec3 camFront = { camera->getFrontX(), camera->getFrontY(), camera->getFrontZ() };
 		glm::vec3 camUp = { camera->getUpX(), camera->getUpY(), camera->getUpZ() };
 		UniformBufferObject ubo = {};
-		ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		float x = scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->getPositionX();
+		float y = scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->getPositionY();
+		float z = scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->getPositionZ();
+		// Using T * R * S transformation for models, default rotate is 90° on the X-axis so models got the angle they have on 3D modeling softwares
+		ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(x,y,z)) * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
 		ubo.view = glm::lookAt(camPos, camPos + camFront, camUp);
 		ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
 		// Render the right way (openGL standards -> Vulkan standards)
@@ -1666,9 +1671,9 @@ private:
 			for (const auto& index : shape.mesh.indices) {
 				Vertex vertex = {};
 				vertex.pos = {
-					(attrib.vertices[3 * index.vertex_index + 0] + obj->getPositionX()) * obj->getScale(),
-					(attrib.vertices[3 * index.vertex_index + 1] + obj->getPositionY()) * obj->getScale(),
-					(attrib.vertices[3 * index.vertex_index + 2] + obj->getPositionZ()) * obj->getScale()
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
 				};
 				vertex.texCoord = {
 					attrib.texcoords[2 * index.texcoord_index + 0],
