@@ -21,21 +21,17 @@ Object::Object(std::string mPath, std::string tPath, float x, float y, float z, 
 }
 
 void Object::move(glm::vec3 movePosition) {
-	for (Vertex vertex : modelVertices) {
-		vertex.pos = vertex.pos + (movePosition * scale);
-	}
 	for (SGNode* child : node->getChildren()) {
 		child->getObject()->move(movePosition);
 	}
+	pos = pos + movePosition;
 }
 
 void Object::move(float x, float y, float z) {
-	for (Vertex vertex : modelVertices) {
-		vertex.pos = { vertex.pos.x + (x * scale), vertex.pos.y + (y * scale), vertex.pos.z + (z * scale) };
-	}
 	for (SGNode* child : node->getChildren()) {
 		child->getObject()->move(x, y, z);
 	}
+	pos = { pos.x + x, pos.y + y, pos.z + z };
 }
 
 void Object::rescale(float newScale) {
@@ -54,6 +50,10 @@ float Object::getPositionY() {
 
 float Object::getPositionZ() {
 	return pos.z;
+}
+
+void Object::setPosition(float newX, float newY, float newZ) {
+	pos = { newX, newY, newZ };
 }
 
 float Object::getScale() {

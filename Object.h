@@ -69,6 +69,7 @@ public:
 	float getPositionX();
 	float getPositionY();
 	float getPositionZ();
+	void setPosition(float newX, float newY, float newZ);
 	float getScale();
 	SGNode* getNode();
 	void setNode(SGNode* newNode);
