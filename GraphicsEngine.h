@@ -18,20 +18,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 #include <array>
-#include <stb_image.h>
-#include <tiny_obj_loader.h>
 #include "Scene.h"
 
-/*const int MAX_FRAMES_IN_FLIGHT = 2;
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const int WIDTH = 1280;
 const int HEIGHT = 720;
-
-struct UniformBufferObject {
-	alignas(16) glm::mat4 model;
-	alignas(16) glm::mat4 view;
-	alignas(16) glm::mat4 proj;
-};
 
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_LUNARG_standard_validation"
@@ -65,8 +57,9 @@ struct SwapChainSupportDetails {
 class GraphicsEngine {
 public:
 	void setScene(Scene* newScene);
-	void run();
+	int start();
 private:
+	void run();
 	void inputsManagement(GLFWwindow* window);
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
@@ -98,8 +91,8 @@ private:
 		front.y = cos(glm::radians(app->pitch)) * sin(glm::radians(app->yaw)) * -1;
 		front.z = sin(glm::radians(app->pitch)) * -1;
 		Camera* camera = app->scene->getCamera();
-		camera = app->scene->getCamera();
-		camera->setFront(glm::normalize(front));
+		glm::vec3 frontN = glm::normalize(front);
+		camera->setFront(frontN.x, frontN.y, frontN.z);
 	}
 
 	static std::vector<char> readFile(const std::string& filename) {
@@ -176,7 +169,7 @@ private:
 	void createImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	void updateUniformBuffer(uint32_t currentImage);
+	void updateUniformBuffer(SGNode* node, uint32_t currentImage);
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels);
@@ -193,7 +186,7 @@ private:
 	void loadModel(SGNode* node);
 	void createVertexBuffer(SGNode* node);
 	void createIndexBuffer(SGNode* node);
-	void updateDescriptorSets(SGNode* node, int frame);
+	void updateDescriptorSets(SGNode* node, int frame, int nbDesc);
 	void mainLoop();
 	void drawFrame();
 	void cleanup();
@@ -223,6 +216,7 @@ private:
 	size_t currentFrame = 0;
 	bool framebufferResized = false;
 	VkDescriptorPool descriptorPool;
+	std::vector<VkDescriptorSet> descriptorSets;
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
@@ -249,4 +243,4 @@ private:
 	double yMouseLast = HEIGHT / 2.f;
 	float pitch = 0.0f;
 	float yaw = 0.0f;
-};*/
+};
