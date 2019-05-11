@@ -1180,7 +1180,7 @@ void GraphicsEngine::updateUniformBuffer(SGNode* node, uint32_t currentImage) {
 	glm::vec3 camUp = { camera->getUpX(), camera->getUpY(), camera->getUpZ() };
 	UniformBufferObject ubo = {};
 	// Using T * R * S transformation for models, default rotate is 90° on the X-axis so models got the angle they have on 3D modeling softwares
-	ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(obj->getPositionX(), obj->getPositionY(), obj->getPositionZ())) * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(obj->getScale()));
+	ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(obj->getPositionX(), obj->getPositionY(), obj->getPositionZ())) * glm::rotate(glm::mat4(1.0f), glm::radians(obj->getRotationX() + 90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(obj->getRotationY()), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(obj->getRotationZ()), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(obj->getScale()));
 	ubo.view = glm::lookAt(camPos, camPos + camFront, camUp);
 	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 	// Render the right way (openGL standards -> Vulkan standards)

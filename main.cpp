@@ -39,6 +39,11 @@ int main() {
 	SGNode arrowNode = SGNode(&arrow);
 	scene.getRoot()->addChild(&arrowNode);
 
+	// Plane Sky
+	Object planeSky = Object("models/plan.obj", "textures/planesky.png", 0.0f, 0.0f, 25.0f, 40.0f, 180.0f, 0.0f, 0.0f);
+	SGNode planeSkyNode = SGNode(&planeSky);
+	scene.getRoot()->addChild(&planeSkyNode);
+
 	// Visualize hierarchy
 	scene.viewSceneGraph();
 

@@ -69,6 +69,7 @@ public:
 	Object();
 	Object(std::string mPath, std::string tPath, glm::vec3 oPos, float mScale);
 	Object(std::string mPath, std::string tPath, float x, float y, float z, float mScale);
+	Object(std::string mPath, std::string tPath, float x, float y, float z, float mScale, float xRot, float yRot, float zRot);
 	void move(glm::vec3 movePosition);
 	void move(float x, float y, float z);
 	void rescale(float newScale);
@@ -77,6 +78,10 @@ public:
 	float getPositionZ();
 	void setPosition(float newX, float newY, float newZ);
 	float getScale();
+	float getRotationX();
+	float getRotationY();
+	float getRotationZ();
+	void setRotation(float newRotX, float newRotY, float newRotZ);
 	SGNode* getNode();
 	void setNode(SGNode* newNode);
 	std::string getModelPath();
@@ -109,6 +114,7 @@ private:
 	std::string texturePath;
 	glm::vec3 pos;
 	float scale;
+	glm::vec3 rot;
 
 	SGNode* node;
 

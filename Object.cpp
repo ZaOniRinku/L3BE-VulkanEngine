@@ -9,6 +9,7 @@ Object::Object(std::string mPath, std::string tPath, glm::vec3 oPos, float mScal
 	scale = mScale;
 	//loadModel();
 	node = nullptr;
+	rot = { 0.0f, 0.0f, 0.0f };
 }
 
 Object::Object(std::string mPath, std::string tPath, float x, float y, float z, float mScale) {
@@ -18,6 +19,17 @@ Object::Object(std::string mPath, std::string tPath, float x, float y, float z, 
 	scale = mScale;
 	//loadModel();
 	node = nullptr;
+	rot = { 0.0f, 0.0f, 0.0f };
+}
+
+Object::Object(std::string mPath, std::string tPath, float x, float y, float z, float mScale, float xRot, float yRot, float zRot) {
+	modelPath = mPath;
+	texturePath = tPath;
+	pos = { x, y, z };
+	scale = mScale;
+	//loadModel();
+	node = nullptr;
+	rot = { xRot, yRot, zRot };
 }
 
 void Object::move(glm::vec3 movePosition) {
@@ -58,6 +70,22 @@ void Object::setPosition(float newX, float newY, float newZ) {
 
 float Object::getScale() {
 	return scale;
+}
+
+float Object::getRotationX() {
+	return rot.x;
+}
+
+float Object::getRotationY() {
+	return rot.y;
+}
+
+float Object::getRotationZ() {
+	return rot.z;
+}
+
+void Object::setRotation(float newRotX, float newRotY, float newRotZ) {
+	rot = { newRotX, newRotY, newRotZ };
 }
 
 SGNode* Object::getNode() {
