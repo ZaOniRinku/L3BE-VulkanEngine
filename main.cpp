@@ -32,12 +32,20 @@ int main() {
 	// Dice 3 object
 	Object dice3 = Object("models/dice.obj", "textures/texturede.png", 1.0f, 0.0f, -0.04, 0.1f);
 	SGNode dice3Node = SGNode(&dice3);
-	scene.getRoot()->addChild(&dice3Node);
+	groundNode.addChild(&dice3Node);
+
+	// Arrow object
+	Object arrow = Object("models/arrow.obj", "textures/arrow.png", 5.5f, 6.5f, 12.2f, 0.4f);
+	SGNode arrowNode = SGNode(&arrow);
+	scene.getRoot()->addChild(&arrowNode);
 
 	// Visualize hierarchy
 	scene.viewSceneGraph();
 
 	GraphicsEngine app;
+
+	// Set the scene
 	app.setScene(&scene);
+	// Start the application
 	app.start();
 }
