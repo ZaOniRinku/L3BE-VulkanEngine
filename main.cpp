@@ -10,7 +10,7 @@ int main() {
 	Scene scene = Scene();
 
 	// Ground object
-	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.1f, 10.0f);
+	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.1f, 30.0f);
 	SGNode groundNode = SGNode(&ground);
 	scene.getRoot()->addChild(&groundNode);
 
@@ -39,10 +39,15 @@ int main() {
 	SGNode arrowNode = SGNode(&arrow);
 	scene.getRoot()->addChild(&arrowNode);
 
-	// Plane Sky
-	Object planeSky = Object("models/plan.obj", "textures/planesky.png", 0.0f, 0.0f, 25.0f, 40.0f, 180.0f, 0.0f, 0.0f);
-	SGNode planeSkyNode = SGNode(&planeSky);
-	scene.getRoot()->addChild(&planeSkyNode);
+	// Skybox object
+	Object skybox = Object("models/skybox.obj", "textures/skybox.png", 0.0f, 0.0f, 0.0f, 55.0f, 90.0f, 0.0f, 0.0f);
+	SGNode skyboxNode = SGNode(&skybox);
+	scene.getRoot()->addChild(&skyboxNode);
+
+	// House object
+	Object house = Object("models/maison.obj", "textures/maison.png", 4.0f, 3.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+	SGNode houseNode = SGNode(&house);
+	groundNode.addChild(&houseNode);
 
 	// Visualize hierarchy
 	scene.viewSceneGraph();
