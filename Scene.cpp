@@ -3,11 +3,15 @@
 Scene::Scene() {
 	sceneRoot = SGNode();
 	camera = Camera();
+	ambientLightValue = 1.0f;
+	ambientLightColor = { 1.0f, 1.0f, 1.0f };
 }
 
 Scene::Scene(Camera sceneCamera) {
 	sceneRoot = SGNode();
 	camera = sceneCamera;
+	ambientLightValue = 1.0f;
+	ambientLightColor = { 1.0f, 1.0f, 1.0f };
 }
 
 SGNode* Scene::getRoot() {
@@ -33,4 +37,28 @@ void Scene::viewSceneGraph() {
 
 int Scene::nbElements() {
 	return sceneRoot.nbElements();
+}
+
+float Scene::getAmbientLightValue() {
+	return ambientLightValue;
+}
+
+void Scene::setAmbientLightValue(float newAmbientLightValue) {
+	ambientLightValue = newAmbientLightValue;
+}
+
+float Scene::getAmbientLightColorR() {
+	return ambientLightColor.x;
+}
+
+float Scene::getAmbientLightColorG() {
+	return ambientLightColor.y;
+}
+
+float Scene::getAmbientLightColorB() {
+	return ambientLightColor.z;
+}
+
+void Scene::setAmbientLightColor(float newR, float newG, float newB) {
+	ambientLightColor = { newR, newG, newB };
 }

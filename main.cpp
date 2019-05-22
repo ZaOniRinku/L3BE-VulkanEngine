@@ -8,6 +8,8 @@ int main() {
 
 	// Scene creation (default Camera)
 	Scene scene = Scene();
+	scene.setAmbientLightColor(1.0f, 1.0f, 1.0f);
+	scene.setAmbientLightValue(1.0f);
 
 	// Ground object
 	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.1f, 30.0f);
@@ -40,7 +42,7 @@ int main() {
 	scene.getRoot()->addChild(&arrowNode);
 
 	// Skybox object
-	Object skybox = Object("models/skybox.obj", "textures/skybox.png", 0.0f, 0.0f, 0.0f, 55.0f, 90.0f, 0.0f, 0.0f);
+	Object skybox = Object("models/skybox.obj", "textures/skyboxspace.png", 0.0f, 0.0f, 0.0f, 55.0f, 90.0f, 0.0f, 0.0f);
 	SGNode skyboxNode = SGNode(&skybox);
 	scene.getRoot()->addChild(&skyboxNode);
 

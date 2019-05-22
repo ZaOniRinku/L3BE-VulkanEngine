@@ -1183,6 +1183,8 @@ void GraphicsEngine::updateUniformBuffer(SGNode* node, uint32_t currentImage) {
 	ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(obj->getPositionX(), obj->getPositionY(), obj->getPositionZ())) * glm::rotate(glm::mat4(1.0f), glm::radians(obj->getRotationX() + 90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(obj->getRotationY()), glm::vec3(0.0f, 1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(obj->getRotationZ()), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(obj->getScale()));
 	ubo.view = glm::lookAt(camPos, camPos + camFront, camUp);
 	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
+	ubo.ambientLightValue = scene->getAmbientLightValue();
+	ubo.ambientLightColor = { scene->getAmbientLightColorR(), scene->getAmbientLightColorB(), scene->getAmbientLightColorG() };
 	// Render the right way (openGL standards -> Vulkan standards)
 	ubo.proj[1][1] *= -1;
 

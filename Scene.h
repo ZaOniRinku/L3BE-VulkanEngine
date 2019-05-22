@@ -13,7 +13,17 @@ public:
 	void setCamera(Camera newCamera);
 	void viewSceneGraph();
 	int nbElements();
+	float getAmbientLightValue();
+	void setAmbientLightValue(float newAmbientLightValue);
+	float getAmbientLightColorR();
+	float getAmbientLightColorG();
+	float getAmbientLightColorB();
+	void setAmbientLightColor(float newR, float newG, float newB);
 private:
 	SGNode sceneRoot;
 	Camera camera;
+
+	// Ambient Light
+	float ambientLightValue;
+	glm::vec3 ambientLightColor;
 };
