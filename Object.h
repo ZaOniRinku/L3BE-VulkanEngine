@@ -96,6 +96,8 @@ public:
 	void setNode(SGNode* newNode);
 	std::string getModelPath();
 	std::string getTexturePath();
+	std::string getName();
+	void setName(std::string newName);
 	std::vector<Vertex>* getModelVertices();
 	std::vector<uint32_t>* getModelIndices();
 	VkBuffer* getVertexBuffer();
@@ -127,6 +129,8 @@ private:
 	glm::vec3 rot;
 
 	SGNode* node;
+
+	std::string name = "";
 
 	// Model attributes
 	std::vector<Vertex> modelVertices;

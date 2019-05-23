@@ -38,7 +38,12 @@ void SGNode::viewSceneNode(int level) {
 			std::cout << "-";
 		}
 		if (child->object != nullptr) {
-			std::cout << " " << child->object->getModelPath() << std::endl;
+			if (child->object->getName() != "") {
+				std::cout << " " << child->object->getName() << std::endl;
+			}
+			else {
+				std::cout << " " << child->object->getModelPath() << std::endl;
+			}
 		}
 		child->viewSceneNode(level + 1);
 	}

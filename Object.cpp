@@ -104,6 +104,14 @@ std::string Object::getTexturePath() {
 	return texturePath;
 }
 
+std::string Object::getName() {
+	return name;
+}
+
+void Object::setName(std::string newName) {
+	name = newName;
+}
+
 std::vector<Vertex>* Object::getModelVertices() {
 	return &modelVertices;
 }
