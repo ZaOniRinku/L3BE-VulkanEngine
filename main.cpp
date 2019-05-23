@@ -9,7 +9,7 @@ int main() {
 	// Scene creation (default Camera)
 	Scene scene = Scene();
 	scene.setAmbientLightColor(1.0f, 1.0f, 1.0f);
-	scene.setAmbientLightValue(1.0f);
+	scene.setAmbientLightValue(0.5f);
 
 	// Ground object
 	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.1f, 30.0f);

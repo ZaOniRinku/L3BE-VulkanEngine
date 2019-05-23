@@ -1184,7 +1184,8 @@ void GraphicsEngine::updateUniformBuffer(SGNode* node, uint32_t currentImage) {
 	ubo.view = glm::lookAt(camPos, camPos + camFront, camUp);
 	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 	ubo.ambientLightValue = scene->getAmbientLightValue();
-	ubo.ambientLightColor = { scene->getAmbientLightColorR(), scene->getAmbientLightColorB(), scene->getAmbientLightColorG() };
+	ubo.ambientLightColor = { scene->getAmbientLightColorR(), scene->getAmbientLightColorG(), scene->getAmbientLightColorB() };
+	ubo.lightPosition = { scene->getLightPositionX(), scene->getLightPositionY(), scene->getLightPositionZ() };
 	// Render the right way (openGL standards -> Vulkan standards)
 	ubo.proj[1][1] *= -1;
 
@@ -1528,6 +1529,11 @@ void GraphicsEngine::loadModel(SGNode* node) {
 			vertex.texCoord = {
 				attrib.texcoords[2 * index.texcoord_index + 0],
 				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			};
+			vertex.normal = {
+				attrib.normals[3 * index.normal_index + 0],
+				attrib.normals[3 * index.normal_index + 1],
+				attrib.normals[3 * index.normal_index + 2]
 			};
 			vertex.color = {
 				1.0f,

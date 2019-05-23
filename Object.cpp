@@ -15,7 +15,7 @@ Object::Object(std::string mPath, std::string tPath, glm::vec3 oPos, float mScal
 Object::Object(std::string mPath, std::string tPath, float x, float y, float z, float mScale) {
 	modelPath = mPath;
 	texturePath = tPath;
-	pos = {x, y, z};
+	pos = { x, y, z };
 	scale = mScale;
 	//loadModel();
 	node = nullptr;

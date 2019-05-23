@@ -19,6 +19,10 @@ public:
 	float getAmbientLightColorG();
 	float getAmbientLightColorB();
 	void setAmbientLightColor(float newR, float newG, float newB);
+	float getLightPositionX();
+	float getLightPositionY();
+	float getLightPositionZ();
+	void setLightPosition(float newX, float newY, float newZ);
 private:
 	SGNode sceneRoot;
 	Camera camera;
@@ -26,4 +30,7 @@ private:
 	// Ambient Light
 	float ambientLightValue;
 	glm::vec3 ambientLightColor;
+
+	// Directional Light
+	glm::vec3 lightPosition;
 };
