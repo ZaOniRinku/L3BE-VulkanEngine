@@ -7,11 +7,15 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in float fragAmbientLightValue;
 layout(location = 3) in vec3 fragAmbientLightColor;
+layout(location = 4) in vec3 fragNormal;
+layout(location = 5) in vec3 fragEye;
+layout(location = 6) in vec3 fragLightPosition;
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
+  float intensity = max(dot(fragNormal, fragLightPosition), 0.0);
   vec3 lightResult = fragAmbientLightValue * fragAmbientLightColor;
-  outColor = texture(texSampler, fragTexCoord);
-  outColor *= vec4(lightResult, 1.0);
+  vec4 diffuse = texture(texSampler, fragTexCoord);
+  outColor = max(diffuse * intensity, diffuse * vec4(lightResult, 1.0));
 }
