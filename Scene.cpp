@@ -4,8 +4,8 @@ Scene::Scene() {
 	sceneRoot = SGNode();
 	camera = Camera();
 	ambientLightValue = 1.0f;
-	ambientLightColor = { 1.0f, 1.0f, 1.0f };
-	lightPosition = { 1.0f, 1.0f, 1.0f };
+	ambientLightColor = { 0.0f, 0.0f, 1.0f };
+	lightDirection = { 1.0f, 1.0f, 1.0f };
 }
 
 Scene::Scene(Camera sceneCamera) {
@@ -13,7 +13,7 @@ Scene::Scene(Camera sceneCamera) {
 	camera = sceneCamera;
 	ambientLightValue = 1.0f;
 	ambientLightColor = { 1.0f, 1.0f, 1.0f };
-	lightPosition = { 1.0f, 1.0f, 1.0f };
+	lightDirection = { 1.0f, 1.0f, 1.0f };
 }
 
 SGNode* Scene::getRoot() {
@@ -65,18 +65,18 @@ void Scene::setAmbientLightColor(float newR, float newG, float newB) {
 	ambientLightColor = { newR, newG, newB };
 }
 
-float Scene::getLightPositionX() {
-	return lightPosition.x;
+float Scene::getLightDirectionX() {
+	return lightDirection.x;
 }
 
-float Scene::getLightPositionY() {
-	return lightPosition.y;
+float Scene::getLightDirectionY() {
+	return lightDirection.y;
 }
 
-float Scene::getLightPositionZ() {
-	return lightPosition.z;
+float Scene::getLightDirectionZ() {
+	return lightDirection.z;
 }
 
-void Scene::setLightPosition(float newX, float newY, float newZ) {
-	lightPosition = { newX, newY, newZ };
+void Scene::setLightDirection(float newX, float newY, float newZ) {
+	lightDirection = { newX, newY, newZ };
 }

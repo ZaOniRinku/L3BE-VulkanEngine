@@ -1185,7 +1185,7 @@ void GraphicsEngine::updateUniformBuffer(SGNode* node, uint32_t currentImage) {
 	ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 	ubo.ambientLightValue = scene->getAmbientLightValue();
 	ubo.ambientLightColor = { scene->getAmbientLightColorR(), scene->getAmbientLightColorG(), scene->getAmbientLightColorB() };
-	ubo.lightPosition = { scene->getLightPositionX(), scene->getLightPositionY(), scene->getLightPositionZ() };
+	ubo.lightDirection = { scene->getLightDirectionX(), scene->getLightDirectionY(), scene->getLightDirectionZ() };
 	// Render the right way (openGL standards -> Vulkan standards)
 	ubo.proj[1][1] *= -1;
 
