@@ -17,7 +17,7 @@ int main() {
 	scene.getRoot()->addChild(&groundNode);
 
 	// Table object
-	Object table = Object("models/table.obj", "textures/table.png", 0.0f, 0.1f, 0.0f, 0.5f);
+	Object table = Object("models/table.obj", "textures/tablewood.png", 0.0f, 0.1f, 0.0f, 0.5f);
 	table.setName("Table");
 	SGNode tableNode = SGNode(&table);
 	groundNode.addChild(&tableNode);
@@ -50,7 +50,7 @@ int main() {
 	scene.getRoot()->addChild(&skyboxNode);
 
 	// House object
-	Object house = Object("models/maison.obj", "textures/maison.png", 4.0f, 3.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+	Object house = Object("models/maison.obj", "textures/maison.png", 4.0f, 3.0f, -0.2f, 1.0f, 0.0f, 0.0f, 0.0f);
 	house.setName("House");
 	SGNode houseNode = SGNode(&house);
 	groundNode.addChild(&houseNode);
