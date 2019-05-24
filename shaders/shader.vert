@@ -7,7 +7,7 @@ layout(binding = 0) uniform UniformBufferObject {
   mat4 proj;
   float ambientLightValue;
   vec3 ambientLightColor;
-  vec3 lightPosition;
+  vec3 lightDirection;
 } ubo;
 
 layout(location = 0) in vec3 inPosition;
@@ -32,5 +32,5 @@ void main() {
   fragTexCoord = inTexCoord;
   fragAmbientLightValue = ubo.ambientLightValue;
   fragAmbientLightColor = ubo.ambientLightColor;
-  fragLightPosition = ubo.lightPosition;
+  fragLightPosition = ubo.lightDirection;
 }
