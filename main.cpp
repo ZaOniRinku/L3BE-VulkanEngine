@@ -2,14 +2,15 @@
 
 int main() {
 	// DEMO
-	// In this demo, Scene Graph Nodes must be created explicitly, 
-	// but in an editor with a UI, SG Nodes can be created automatically 
+	// In this demo, Scene Graph Nodes must be created explicitly,
+	// but in an editor with a UI, SG Nodes can be created automatically
 	// when an instance is placed inside a scene, according to the instances hierarchy.
 
 	// Scene creation (default Camera)
 	Scene scene = Scene();
 	scene.setAmbientLightColor(1.0f, 1.0f, 1.0f);
 	scene.setAmbientLightValue(0.5f);
+	scene.setLightPosition(0.0f, 0.0f, 1.0f);
 
 	// Ground object
 	Object ground = Object("models/plan.obj", "textures/textureplan.jpg", 0.0f, 0.0f, -0.1f, 30.0f);
@@ -44,7 +45,7 @@ int main() {
 	scene.getRoot()->addChild(&arrowNode);
 
 	// Skybox object
-	Object skybox = Object("models/skybox.obj", "textures/skyboxspace.png", 0.0f, 0.0f, 0.0f, 55.0f, 90.0f, 0.0f, 0.0f);
+	Object skybox = Object("models/skybox.obj", "textures/skybox.png", 0.0f, 0.0f, 0.0f, 55.0f, 90.0f, 0.0f, 0.0f);
 	skybox.setName("Skybox");
 	SGNode skyboxNode = SGNode(&skybox);
 	scene.getRoot()->addChild(&skyboxNode);

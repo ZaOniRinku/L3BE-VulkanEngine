@@ -69,7 +69,7 @@ struct UniformBufferObject {
 	alignas(16) glm::mat4 proj;
 	alignas(16) float ambientLightValue;
 	alignas(16) glm::vec3 ambientLightColor;
-	alignas(16) glm::vec3 lightDirection;
+	alignas(16) glm::vec3 lightPosition;
 };
 
 class SGNode;
