@@ -91,9 +91,6 @@ void GraphicsEngine::inputsManagement(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 		scene->getRoot()->getChildren().front()->getChildren().front()->getObject()->move(0.0f, movementObject, 0.0f);
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		std::cout << camera->getPositionX() << " " << camera->getPositionY() << " " << camera->getPositionZ() << std::endl;
-	}
 	// Lock z axis
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		camera->setPosition(camera->getPositionX(), camera->getPositionY(), savedZAxis);
